@@ -1,23 +1,74 @@
-# daisy_calendar_demo
-Chatgpt assisted day care copy paste into calendar extractor
+# Daycare Schedule to Calendar Converter
 
+This project provides an HTML tool that allows parents to convert their children's daycare schedules into a downloadable iCalendar (.ics) file. The generated .ics file can then be imported into any standard calendar application, such as Outlook or Google Calendar, ensuring parents have up-to-date schedules for their children.
 
-# Integration of Automated Calendar Event Generation for Daycare Services
+## Features
 
-# Idea Overview
-The proposal aims to enhance daycare service websites by integrating an automated calendar event generation feature. This feature will allow parents to easily import their children's daycare schedules into their personal calendars (such as Outlook or Google Calendar) with a single click. By leveraging existing schedule data in the daycare's database, the system can generate an iCalendar (.ics) file, which can be downloaded and imported into any standard calendar application.
+- **Data Extraction**: Extracts children's schedules from a text input.
+- **Event Formatting**: Converts the extracted schedule data into iCalendar format.
+- **File Generation**: Generates an iCalendar (.ics) file containing all relevant events.
+- **User-Friendly Interface**: Simple web interface for generating and downloading the calendar file.
 
-# Working Principles
-Data Extraction: Utilize the daycare's existing database to extract children's schedules, including dates, start times, end times, and any special notes (e.g., 'Poissa' for days off).
-Event Formatting: Convert the extracted schedule data into a standardized iCalendar format.
-File Generation: Generate an iCalendar (.ics) file containing all the relevant events.
-Download Link: Provide a link on the daycare service website where parents can download the .ics file.
-Calendar Integration: Allow parents to import the .ics file into their personal calendar applications, ensuring they have up-to-date schedules for their children.
+## How It Works
 
-# Implementation Suggestion
-Database Query: Develop a backend service that queries the daycare’s database to fetch schedule data for each child.
-ICS File Creation: Use server-side scripting (e.g., Python, PHP, Node.js) to format the fetched data into an iCalendar (.ics) file.
-User Interface: Add a user-friendly interface on the daycare service website, where parents can select their child's name and generate/download the corresponding .ics file.
-Automation: Consider automating the generation and emailing of .ics files to parents on a regular basis (e.g., weekly).
+1. **Paste Schedule Data**: Paste your children's schedule into the provided text area in the HTML tool.
+2. **Generate Calendar**: Click the "Generate Calendar" button to process the schedule data.
+3. **Download .ics File**: Click the "Download Calendar" link to download the generated .ics file.
+4. **Import to Calendar**: Import the .ics file into your preferred calendar application.
 
-By integrating this feature, daycare service providers can significantly improve parental convenience, reduce scheduling errors, and enhance overall customer satisfaction.
+## Getting Started
+
+### Prerequisites
+
+- A web browser to open the HTML file.
+
+### Usage
+
+1. Clone the repository or download the HTML file.
+    ```bash
+    git clone https://github.com/your-username/daycare-schedule-to-calendar.git
+    cd daycare-schedule-to-calendar
+    ```
+2. Open the `calendar_extractor.html` file in your web browser.
+3. Paste the daycare schedule into the text area.
+4. Click the "Generate Calendar" button.
+5. Download the generated `.ics` file by clicking the "Download Calendar" link.
+6. Import the `.ics` file into your preferred calendar application.
+
+## Example Schedule Format
+
+27.05.
+ma
+vko.22
+Child1
+08:0016:00
+Child2
+Poissa
+28.05.
+ti
+vko.22
+Child1
+08:0016:00
+Child2
+Poissa
+29.05.
+ke
+vko.22
+Child1
+08:3016:15
+Child2
+08:4516:15
+30.05.
+to
+vko.22
+Child1
+08:3016:15
+Child2
+08:4516:00
+31.05.
+pe
+vko.22
+Child1
+08:0015:30
+Child2
+07:4515:15
