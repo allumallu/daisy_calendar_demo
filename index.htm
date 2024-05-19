@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendar Events Extractor</title>
+</head>
+<body>
+    <textarea id="input" rows="20" cols="50" placeholder="Paste your schedule here..."></textarea>
+    <button onclick="generateCalendar()">Generate Calendar</button>
+
+    <a id="downloadLink" style="display:none">Download Calendar</a>
+
+    <script>
+        function parseTime(time) {
+            let [hours, minutes] = time.split(':').map(Number);
+            return { hours, minutes };
+        }
+
+        function formatDate(date) {
+            let month = '' + (date.getMonth() + 1),
+                day = '' + date.getDate(),
+                year = date.getFullYear();
+
+            if (month.length < 2) month = '0' + month;
+            if (day.length < 2) day = '0' + day;
+
+            return [year, month, day].join('');
+        }
+
+        function generateUUID() {
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+                var r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
+        }
+
+        function parseDate(dateString) {
+            const [day, month] = dateString.split('.').map(Number);
+            const currentYear = new Date().getFullYear();
+            return new Date(currentYear, month - 1, day);
+        }
+
+        function generateCalendar() {
+            const input = document.getElementById('input').value;
+            const lines = input.split('\n').filter(line => line.trim() !== '');
+            console.log("Lines:", lines);
+            const events = [];
+
+            for (let i = 0; i < lines.length; i += 7) {  // Process 7 lines per iteration
+                const dateLine = lines[i].trim();
+                const eventDate = parseDate(dateLine);
+                console.log("Event Date:", eventDate);
+
+                const nameLine1 = lines[i + 3] || '';
+                const timeLine1 = lines[i + 4] || '';
+                console.log(`Parsing name line 1: "${nameLine1}"`);
+                console.log(`Parsing time line 1: "${timeLine1}"`);
+
+                if (nameLine1 && timeLine1) {
+                    const name1 = nameLine1.trim();
+                    const times1 = timeLine1.trim().match(/(\d{2}:\d{2})/g);
+                    if (times1 && times1.length === 2) {
+                        const [startTime1, endTime1] = times1;
+                        events.push({ name: name1, date: eventDate, startTime: parseTime(startTime1), endTime: parseTime(endTime1) });
+                        console.log("Added event:", { name: name1, eventDate, startTime1, endTime1 });
+                    } else if (timeLine1.includes('Poissa')) {
+                        events.push({ name: name1, date: eventDate, off: true });
+                        console.log("Added off event:", { name: name1, eventDate });
+                    }
+                }
+
+                const nameLine2 = lines[i + 5] || '';
+                const timeLine2 = lines[i + 6] || '';
+                console.log(`Parsing name line 2: "${nameLine2}"`);
+                console.log(`Parsing time line 2: "${timeLine2}"`);
+
+                if (nameLine2 && timeLine2) {
+                    const name2 = nameLine2.trim();
+                    const times2 = timeLine2.trim().match(/(\d{2}:\d{2})/g);
+                    if (times2 && times2.length === 2) {
+                        const [startTime2, endTime2] = times2;
+                        events.push({ name: name2, date: eventDate, startTime: parseTime(startTime2), endTime: parseTime(endTime2) });
+                        console.log("Added event:", { name: name2, eventDate, startTime2, endTime2 });
+                    } else if (timeLine2.includes('Poissa')) {
+                        events.push({ name: name2, date: eventDate, off: true });
+                        console.log("Added off event:", { name: name2, eventDate });
+                    }
+                }
+            }
+
+            if (events.length === 0) {
+                alert("No events found. Please check the input format.");
+                return;
+            }
+
+            let icsContent = 'BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//Your Organization//Your Product//EN\nCALSCALE:GREGORIAN\nMETHOD:PUBLISH\n';
+
+            events.forEach(event => {
+                const start = new Date(event.date);
+                const end = new Date(event.date);
+
+                if (!event.off) {
+                    start.setHours(event.startTime.hours, event.startTime.minutes);
+                    end.setHours(event.endTime.hours, event.endTime.minutes);
+
+                    icsContent += 'BEGIN:VEVENT\n';
+                    icsContent += `UID:${generateUUID()}\n`;
+                    icsContent += `SUMMARY:${event.name}\n`;
+                    icsContent += `DTSTART:${formatDate(start)}T${String(event.startTime.hours).padStart(2, '0')}${String(event.startTime.minutes).padStart(2, '0')}00\n`;
+                    icsContent += `DTEND:${formatDate(end)}T${String(event.endTime.hours).padStart(2, '0')}${String(event.endTime.minutes).padStart(2, '0')}00\n`;
+                    icsContent += `DTSTAMP:${new Date().toISOString().replace(/[-:]/g, '').split('.')[0]}Z\n`;
+                    icsContent += 'STATUS:CONFIRMED\n';
+                    icsContent += 'TRANSP:TRANSPARENT\n';
+                    icsContent += 'END:VEVENT\n';
+                } else {
+                    icsContent += 'BEGIN:VEVENT\n';
+                    icsContent += `UID:${generateUUID()}\n`;
+                    icsContent += `SUMMARY:${event.name} - Off\n`;
+                    icsContent += `DTSTART;VALUE=DATE:${formatDate(start)}\n`;
+                    icsContent += `DTEND;VALUE=DATE:${formatDate(start)}\n`;
+                    icsContent += `DTSTAMP:${new Date().toISOString().replace(/[-:]/g, '').split('.')[0]}Z\n`;
+                    icsContent += 'STATUS:CONFIRMED\n';
+                    icsContent += 'TRANSP:TRANSPARENT\n';
+                    icsContent += 'END:VEVENT\n';
+                }
+            });
+
+            icsContent += 'END:VCALENDAR';
+
+            console.log("ICS Content:", icsContent);
+
+            const blob = new Blob([icsContent], { type: 'text/calendar' });
+            const url = URL.createObjectURL(blob);
+            const downloadLink = document.getElementById('downloadLink');
+            downloadLink.href = url;
+            downloadLink.download = 'calendar.ics';
+            downloadLink.style.display = 'block';
+            downloadLink.textContent = 'Download Calendar';
+        }
+    </script>
+</body>
+</html>
